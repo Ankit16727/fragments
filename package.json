@@ -1,6 +1,6 @@
 {
   "name": "fragments",
-  "private" : "true",
+  "private": "true",
   "version": "0.0.1",
   "description": "A node.js based REST API using express.",
   "scripts": {
@@ -11,5 +11,8 @@
     "url": "git+https://github.com/Ankit16727/fragments.git"
   },
   "author": "Ankit Thapar",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "prettier": "3.4.2"
+  }
 }
