@@ -1,0 +1,15 @@
+{
+  "name": "fragments",
+  "private" : "true",
+  "version": "0.0.1",
+  "description": "A node.js based REST API using express.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ankit16727/fragments.git"
+  },
+  "author": "Ankit Thapar",
+  "license": "UNLICENSED"
+}
