@@ -1,5 +1,6 @@
 // Fix this path to point to your project's `memory-db.js` source file
 const MemoryDB = require('../../src/model/data/memory/memory-db');
+const {writeFragment, readFragment, writeFragmentData, readFragmentData} = require('../../src/model/data/memory/index')
 
 describe('memory-db', () => {
   let db;
@@ -88,3 +89,42 @@ describe('memory-db', () => {
     expect(async () => await db.del(1, 1)).rejects.toThrow();
   });
 });
+
+// Sample test data
+const sampleFragment = {
+  ownerId: 'user1',
+  id: 'fragment1',
+  data: { content: 'Hello, world!' },
+};
+
+const sampleBuffer = Buffer.from('This is a test buffer');
+
+describe('MemoryDB Fragment Tests', () => {
+  beforeEach(async () => {
+    // Ensure we start fresh before each test
+    await writeFragment(sampleFragment);
+    await writeFragmentData(sampleFragment.ownerId, sampleFragment.id, sampleBuffer);
+  });
+
+  test('writeFragment() stores fragment metadata', async () => {
+    const storedFragment = await readFragment(sampleFragment.ownerId, sampleFragment.id);
+    expect(storedFragment).toEqual(sampleFragment);
+  });
+
+  test('readFragment() returns undefined for undefined fragment', async () => {
+    const result = await readFragment('user2', 'nonexistent');
+    expect(result).toBe(undefined);
+  });
+
+  test('writeFragmentData() stores fragment data', async () => {
+    const storedData = await readFragmentData(sampleFragment.ownerId, sampleFragment.id);
+    expect(storedData).toEqual(sampleBuffer);
+  });
+
+  test('readFragmentData() returns undefined for undefined data', async () => {
+    const result = await readFragmentData('user2', 'nonexistent');
+    expect(result).toBe(undefined);
+  });
+});
+
+
