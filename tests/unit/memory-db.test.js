@@ -1,6 +1,11 @@
 // Fix this path to point to your project's `memory-db.js` source file
 const MemoryDB = require('../../src/model/data/memory/memory-db');
-const {writeFragment, readFragment, writeFragmentData, readFragmentData} = require('../../src/model/data/memory/index')
+const {
+  writeFragment,
+  readFragment,
+  writeFragmentData,
+  readFragmentData,
+} = require('../../src/model/data/index');
 
 describe('memory-db', () => {
   let db;
@@ -44,7 +49,7 @@ describe('memory-db', () => {
     expect(Array.isArray(results)).toBe(true);
     expect(results).toEqual([{ value: 1 }, { value: 2 }, { value: 3 }]);
   });
-  
+
   test('query() returns empty array', async () => {
     await db.put('b', 'a', { value: 1 });
     await db.put('b', 'b', { value: 2 });
@@ -126,5 +131,3 @@ describe('MemoryDB Fragment Tests', () => {
     expect(result).toBe(undefined);
   });
 });
-
-
