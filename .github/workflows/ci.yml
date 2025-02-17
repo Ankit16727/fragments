@@ -45,6 +45,8 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    env:
+      API_URL: http://localhost:8080
     steps:
       - name: Check out code
         uses: actions/checkout@v4

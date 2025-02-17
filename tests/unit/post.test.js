@@ -71,25 +71,27 @@ describe('POST /v1/fragments', () => {
   // 5. Response Includes Location Header
   test('POST response includes a Location header with a full URL to GET the created fragment', async () => {
     logger.debug('Sending request to check Location header in response');
+
     const response = await request(app)
       .post('/v1/fragments')
       .auth('user1@email.com', 'password1')
       .set('Content-Type', 'text/plain')
       .send('This is a fragment');
 
+    expect(response.status).toBe(201); // Ensure request was successful
+
     const fragmentId = response.body.fragment.id;
 
-    const apiUrl = process.env.API_URL;
-    if (
-      !response.headers.location ||
-      response.headers.location !== `${apiUrl}/v1/fragments/${fragmentId}`
-    ) {
-      logger.warn(
-        `Location header mismatch: Expected ${apiUrl}/v1/fragments/${fragmentId}, Got ${response.headers.location}`
-      );
-    }
-    // Ensure the Location header contains the full expected URL
-    expect(response.headers.location).toBe(`${apiUrl}/v1/fragments/${fragmentId}`);
+    // Dynamically determine API URL (fallback to request host if env variable is missing)
+    const apiUrl = process.env.API_URL || `${response.request.protocol}//${response.request.host}`;
+
+    const expectedLocation = new URL(`/v1/fragments/${fragmentId}`, apiUrl).href;
+
+    logger.debug(
+      `Checking Location header: Expected ${expectedLocation}, Got ${response.headers.location}`
+    );
+
+    expect(response.headers.location).toBe(expectedLocation);
     logger.info('Location header is correctly formatted');
   });
 
