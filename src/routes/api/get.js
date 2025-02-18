@@ -1,13 +1,17 @@
 // src/routes/api/get.js
-
+const crypto = require('crypto');
 const { createSuccessResponse } = require('../../response');
+const { Fragment } = require('../../model/fragment');
 
 /**
  * Get a list of fragments for the current user
  */
-module.exports = (req, res) => {
-  const data = { fragments: [] };
-  const response = createSuccessResponse(data);
+module.exports = async (req, res) => {
+  const expand = req.query.expand == 1 ? true : false;
+  let user = crypto.createHash('sha256').update(req.user).digest('hex');
+  const data = await Fragment.byUser(user, expand);
+
+  const response = createSuccessResponse({ fragments: data });
   // TODO: this is just a placeholder. To get something working, return an empty array...
   res.status(200).json(response);
 };
