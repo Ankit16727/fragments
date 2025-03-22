@@ -12,6 +12,8 @@ const router = express.Router();
 
 // Define our first route, which will be: GET /v1/fragments
 router.get('/fragments', require('./get'));
+// Get converted fragments: GET /v1/fragments/:id.ext
+router.get('/fragments/:id.:ext', require('./getByIdWithExtension'));
 // Get fragments by id: GET /v1/fragments/:id
 router.get('/fragments/:id', require('./getById'));
 // Get info of a particular fragment

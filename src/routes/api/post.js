@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
       id: id,
       ownerId: crypto.createHash('sha256').update(req.user).digest('hex'),
       created: new Date().toISOString(),
-      update: new Date().toISOString(),
+      updated: new Date().toISOString(),
       type: contentType,
       size: Number(req.headers['content-length']),
     });
