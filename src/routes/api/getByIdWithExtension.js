@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const { Fragment } = require('../../model/fragment');
 const { createErrorResponse } = require('../../response');
 const markdownit = require('markdown-it');
