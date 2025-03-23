@@ -4,7 +4,7 @@ const { createErrorResponse, createSuccessResponse } = require('../../response')
 
 module.exports = async (req, res) => {
   const id = req.params.id;
-  const userHash = crypto.createHash('sha256').update(req.user).digest('hex');
+  const userHash = req.user;
 
   // Fetch user's fragment list
   const fragmentIds = await Fragment.byUser(userHash);

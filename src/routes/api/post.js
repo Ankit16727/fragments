@@ -26,9 +26,8 @@ module.exports = async (req, res) => {
     });
 
     // Save metadata and data
-
-    await fragment.setData(req.body);
     await fragment.save();
+    await fragment.setData(req.body);
 
     const apiURL = process.env.API_URL || `${req.protocol}://${req.headers.host}`;
     const location = new URL(`/v1/fragments/${fragment.id}`, apiURL).toString();

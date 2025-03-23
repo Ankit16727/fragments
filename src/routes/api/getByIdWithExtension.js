@@ -89,7 +89,7 @@ const convertFragmentData = (mimeType, ext, data) => {
 module.exports = async (req, res) => {
   const { id, ext } = req.params;
   const extWithDot = `.${ext}`;
-  const userHash = crypto.createHash('sha256').update(req.user).digest('hex');
+  const userHash = req.user;
 
   // Fetch user's fragment list
   const fragmentIds = await Fragment.byUser(userHash);

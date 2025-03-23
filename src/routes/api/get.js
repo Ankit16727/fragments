@@ -1,5 +1,4 @@
 // src/routes/api/get.js
-const crypto = require('crypto');
 const { createSuccessResponse } = require('../../response');
 const { Fragment } = require('../../model/fragment');
 
@@ -8,7 +7,7 @@ const { Fragment } = require('../../model/fragment');
  */
 module.exports = async (req, res) => {
   const expand = req.query.expand == 1 ? true : false;
-  let user = crypto.createHash('sha256').update(req.user).digest('hex');
+  let user = req.user;
   const data = await Fragment.byUser(user, expand);
 
   const response = createSuccessResponse({ fragments: data });
