@@ -126,4 +126,110 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       { name: 'Bob', age: '25' },
     ]);
   });
+
+  test('HTML to plain text conversion', async () => {
+    const htmlContent = '<h1>Hello</h1><p>World</p>';
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/html')
+      .send(htmlContent);
+
+    const id = resPost.body.fragment.id;
+    logger.debug('HTML fragment created for plain text conversion:', id);
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.txt`)
+      .auth('user1@email.com', 'password1');
+
+    logger.info('Converted HTML to plain text');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Hello');
+    expect(res.text).toContain('World');
+    expect(res.text).not.toContain('<h1>');
+  });
+
+  test('JSON to JSON (pretty print) conversion', async () => {
+    const jsonData = { language: 'JavaScript', version: 'ES2023' };
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/json')
+      .send(JSON.stringify(jsonData));
+
+    const id = resPost.body.fragment.id;
+    logger.debug('JSON fragment for pretty print created:', id);
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.json`)
+      .auth('user1@email.com', 'password1');
+
+    logger.info('Returned pretty-printed JSON');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/application\/json/);
+    expect(res.body).toEqual(jsonData);
+  });
+
+  test('CSV to plain text conversion', async () => {
+    const csv = 'item,price\nBook,10\nPen,1.5';
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/csv')
+      .send(csv);
+
+    const id = resPost.body.fragment.id;
+    logger.debug('CSV fragment created for text conversion:', id);
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.txt`)
+      .auth('user1@email.com', 'password1');
+
+    logger.info('Converted CSV to plain text');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('item,price');
+    expect(res.text).toContain('Book,10');
+  });
+
+  test('Markdown to Markdown (.md) return', async () => {
+    const md = '# Heading\nSome **bold** text.';
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/markdown')
+      .send(md);
+
+    const id = resPost.body.fragment.id;
+    logger.debug('Markdown fragment created for .md return:', id);
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.md`)
+      .auth('user1@email.com', 'password1');
+
+    logger.info('Returned raw markdown from markdown fragment');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('# Heading');
+    expect(res.headers['content-type']).toMatch(/text\/markdown/);
+  });
+
+  test('CSV to CSV (round-trip) return', async () => {
+    const csv = 'name,email\nJane,jane@example.com';
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'text/csv')
+      .send(csv);
+
+    const id = resPost.body.fragment.id;
+    logger.debug('CSV fragment created for round-trip test:', id);
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.csv`)
+      .auth('user1@email.com', 'password1');
+
+    logger.info('Returned raw CSV from CSV fragment');
+    expect(res.status).toBe(200);
+    expect(res.text.trim()).toBe(csv);
+    expect(res.headers['content-type']).toMatch(/text\/csv/);
+  });
 });
