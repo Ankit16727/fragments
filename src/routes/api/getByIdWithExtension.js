@@ -3,9 +3,10 @@ const { createErrorResponse } = require('../../response');
 const markdownit = require('markdown-it');
 const striptags = require('striptags');
 const removeMarkdown = require('remove-markdown');
+const logger = require('../../logger'); // Assuming you're using a logger
 
 const md = new markdownit();
-// Function to validate conversions for text-based fragments
+
 const validConversion = (mimeType, ext) => {
   const validConversions = {
     'text/plain': ['.txt'],
@@ -18,7 +19,6 @@ const validConversion = (mimeType, ext) => {
   return validConversions[mimeType]?.includes(ext);
 };
 
-// Function to handle conversions
 const convertFragmentData = (mimeType, ext, data) => {
   let convertedData = data;
   let contentType = mimeType;
@@ -90,30 +90,62 @@ module.exports = async (req, res) => {
   const extWithDot = `.${ext}`;
   const userHash = req.user;
 
-  // Fetch user's fragment list
-  const fragmentIds = await Fragment.byUser(userHash);
+  let fragmentIds;
+  try {
+    fragmentIds = await Fragment.byUser(userHash);
+  } catch (err) {
+    logger.error('Error fetching fragment list', { userHash, error: err.message });
+    return res.status(500).json(createErrorResponse(500, 'Error fetching fragment list'));
+  }
 
   if (!fragmentIds.includes(id)) {
+    logger.warn(`Fragment not found: ${id}`);
     return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
   }
 
-  const fragmentObject = await Fragment.byId(userHash, id);
+  let fragmentObject;
+  try {
+    fragmentObject = await Fragment.byId(userHash, id);
+  } catch (err) {
+    logger.error('Error retrieving fragment by ID', { id, error: err.message });
+    return res.status(500).json(createErrorResponse(500, 'Failed to retrieve fragment'));
+  }
+
   const fragment =
     fragmentObject instanceof Fragment ? fragmentObject : new Fragment(fragmentObject);
 
-  let data = await fragment.getData();
-  let contentType = fragment.mimeType;
-
-  if (!validConversion(contentType, extWithDot)) {
-    return res
-      .status(415)
-      .json(createErrorResponse(415, `Cannot convert from ${contentType} to ${extWithDot}`));
+  let data;
+  try {
+    data = await fragment.getData();
+  } catch (err) {
+    logger.error('Error getting fragment data', { id, error: err.message });
+    return res.status(500).json(createErrorResponse(500, 'Failed to retrieve fragment data'));
   }
 
-  const result = convertFragmentData(contentType, extWithDot, data);
-  data = result.data;
-  contentType = result.contentType;
+  let result;
+  try {
+    const contentType = fragment.mimeType;
 
-  res.setHeader('Content-Type', contentType);
-  res.status(200).send(data);
+    if (!validConversion(contentType, extWithDot)) {
+      logger.warn(
+        `Invalid conversion requested for fragment ${id}: ${contentType} to ${extWithDot}`
+      );
+      return res
+        .status(415)
+        .json(createErrorResponse(415, `Cannot convert from ${contentType} to ${extWithDot}`));
+    }
+
+    result = convertFragmentData(contentType, extWithDot, data);
+  } catch (err) {
+    logger.error('Error converting fragment data', { id, error: err.message });
+    return res.status(500).json(createErrorResponse(500, 'Failed to convert fragment data'));
+  }
+
+  try {
+    res.setHeader('Content-Type', result.contentType);
+    res.status(200).send(result.data);
+  } catch (err) {
+    logger.error('Error sending response', { id, error: err.message });
+    return res.status(500).json(createErrorResponse(500, 'Failed to send response'));
+  }
 };
