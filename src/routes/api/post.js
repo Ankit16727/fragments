@@ -16,10 +16,9 @@ module.exports = async (req, res) => {
 
     const contentType = req.headers['content-type'];
     // Create a new fragment
-    const id = generateUUID();
     const fragment = new Fragment({
-      id: id,
-      ownerId: crypto.createHash('sha256').update(req.user).digest('hex'),
+      id: generateUUID(),
+      ownerId: req.user,
       created: new Date().toISOString(),
       updated: new Date().toISOString(),
       type: contentType,
@@ -27,9 +26,9 @@ module.exports = async (req, res) => {
     });
 
     // Save metadata and data
-    //await fragment.save();
 
     await fragment.setData(req.body);
+    await fragment.save();
 
     const apiURL = process.env.API_URL || `${req.protocol}://${req.headers.host}`;
     const location = new URL(`/v1/fragments/${fragment.id}`, apiURL).toString();
