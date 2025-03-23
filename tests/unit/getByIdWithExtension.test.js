@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../../src/app');
+const logger = require('../../src/logger');
 
 describe('GET /v1/fragments/:id.ext - with conversion', () => {
   test('Check validConversion() pass', async () => {
@@ -10,11 +11,13 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       .send('fragment');
 
     const id = resPost.body.fragment.id;
+    logger.debug('Created fragment ID:', id);
 
     const res = await request(app)
       .get(`/v1/fragments/${id}.txt`)
       .auth('user1@email.com', 'password1');
 
+    logger.info('Response:', res.status, res.headers['content-type']);
     expect(res.status).toBe(200);
   });
 
@@ -26,11 +29,13 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       .send('fragment');
 
     const id = resPost.body.fragment.id;
+    logger.debug('Created fragment ID for invalid test:', id);
 
     const res = await request(app)
       .get(`/v1/fragments/${id}.png`)
       .auth('user1@email.com', 'password1');
 
+    logger.warn(`Expected failure for unsupported conversion. Status: ${res.status}`);
     expect(res.status).toBe(415);
   });
 
@@ -43,11 +48,13 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       .send(markdown);
 
     const id = resPost.body.fragment.id;
+    logger.debug('Created markdown fragment ID:', id);
 
     const res = await request(app)
       .get(`/v1/fragments/${id}.html`)
       .auth('user1@email.com', 'password1');
 
+    logger.info(`Converted markdown to HTML. Content-Type: ${res.headers['content-type']}`);
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/text\/html/);
     expect(res.text).toContain('<h1');
@@ -62,11 +69,13 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       .send(markdown);
 
     const id = resPost.body.fragment.id;
+    logger.debug('Markdown fragment for plain text conversion:', id);
 
     const res = await request(app)
       .get(`/v1/fragments/${id}.txt`)
       .auth('user1@email.com', 'password1');
 
+    logger.info('Converted markdown to plain text.');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/text\/plain/);
     expect(res.text).toContain('Hello World');
@@ -82,11 +91,13 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       .send(JSON.stringify(jsonData));
 
     const id = resPost.body.fragment.id;
+    logger.debug('JSON fragment created with ID:', id);
 
     const res = await request(app)
       .get(`/v1/fragments/${id}.txt`)
       .auth('user1@email.com', 'password1');
 
+    logger.info('Converted JSON to text');
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/text\/plain/);
     expect(res.text).toContain('"name": "Alice"');
@@ -101,11 +112,13 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       .send(csv);
 
     const id = resPost.body.fragment.id;
+    logger.debug('CSV fragment created with ID:', id);
 
     const res = await request(app)
       .get(`/v1/fragments/${id}.json`)
       .auth('user1@email.com', 'password1');
 
+    logger.info('Converted CSV to JSON:', res.body);
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/application\/json/);
     expect(res.body).toEqual([
