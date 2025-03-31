@@ -18,6 +18,8 @@ router.get('/fragments/:id.:ext', require('./getByIdWithExtension'));
 router.get('/fragments/:id', require('./getById'));
 // Get info of a particular fragment
 router.get('/fragments/:id/info', require('./getFragmentInfo'));
+
+router.delete('/fragments/:id', require('./deleteById'));
 // Other routes (POST, DELETE, etc.) will go here later on...
 // Support sending various Content-Types on the body up to 5M in size
 const rawBody = () =>
