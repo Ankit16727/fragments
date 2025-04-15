@@ -28,6 +28,10 @@
         {
           "name": "AWS_COGNITO_POOL_ID",
           "value": "us-east-1_ccZIRWlFf"
+        },
+        {
+          "name": "AWS_S3_BUCKET_NAME",
+          "value": "fragments"
         }
       ],
       "environmentFiles": [],
