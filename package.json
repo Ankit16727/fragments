@@ -1,7 +1,7 @@
 {
   "name": "fragments",
   "private": "true",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A node.js based REST API using express.",
   "scripts": {
     "test:watch": "jest -c jest.config.js --runInBand --watch --",
