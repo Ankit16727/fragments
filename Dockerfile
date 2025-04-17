@@ -1,49 +1,42 @@
-# This is a docker file
-# It's important for Docker Engine to build a docker image which can be used for running the Docker Container
-
-###################################################
-# Use node version 23.6.0
-FROM node:23.6.0 AS build
+# -------------------------------------------------------
+# Base build stage
+FROM node:22.2.0 AS build
 
 LABEL maintainer="Ankit Thapar <athapar4@myseneca.ca>"
-LABEL description="Fragments node.js microservice"
+LABEL description="Fragments Node.js microservice"
 
-# Setting working directory for build
+# Set working directory
 WORKDIR /app
 
-# Copy package files first for caching
+# Install only production dependencies first for caching
 COPY package*.json ./
-
-# Install dependencies efficiently
 RUN npm ci --only=production
 
-# Copy the rest of the application files
+# Copy application code
 COPY . .
 
+# -------------------------------------------------------
+# Production stage
+FROM node:22.2.0-alpine AS production
 
-###################################################
-#Use a smaller Alpine image for production
-FROM node:23.6.0-alpine AS production
-
-# We default to use port 8080 in our service
-ENV PORT=8080
-
-# Reduce npm spam when installing within Docker
-# https://docs.npmjs.com/cli/v8/using-npm/config#loglevel
+# Environment variables
+ENV PORT=${PORT:-8080}
+ENV NODE_ENV=production
 ENV NPM_CONFIG_LOGLEVEL=warn
-
-# Disable colour when run inside Docker
-# https://docs.npmjs.com/cli/v8/using-npm/config#color
 ENV NPM_CONFIG_COLOR=false
 
-# Use /app as our working directory
+# Working directory inside container
 WORKDIR /app
 
-# Copy only necessary files from build stage
+# Copy from build stage
 COPY --from=build /app /app
 
-# Start the container by running our server
-CMD ["npm", "start"]
+# Expose port (based on $PORT)
+EXPOSE ${PORT}
 
-# We run our service on port 8080
-EXPOSE 8080
+# Health check to verify container is working
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/v1/fragments || exit 1
+
+# Start the app using node directly
+CMD ["node", "src/index.js"]

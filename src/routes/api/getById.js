@@ -19,16 +19,13 @@ module.exports = async (req, res) => {
     return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
   }
 
-  let fragmentObject;
+  let fragment;
   try {
-    fragmentObject = await Fragment.byId(userHash, id);
+    fragment = await Fragment.byId(userHash, id);
   } catch (err) {
     logger.error('Failed to retrieve fragment by ID', { id, userHash, error: err.message });
     return res.status(500).json(createErrorResponse(500, 'Failed to retrieve fragment'));
   }
-
-  const fragment =
-    fragmentObject instanceof Fragment ? fragmentObject : new Fragment(fragmentObject);
 
   let data;
   try {
