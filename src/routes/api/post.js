@@ -30,7 +30,6 @@ module.exports = async (req, res) => {
     const location = new URL(`/v1/fragments/${fragment.id}`, apiURL).toString();
     res.setHeader('Location', location);
 
-    // 🔥 Add this success log
     logger.info('Fragment created successfully', {
       user: req.user,
       fragmentId: fragment.id,
