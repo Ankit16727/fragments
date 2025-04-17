@@ -32,6 +32,10 @@
         {
           "name": "AWS_S3_BUCKET_NAME",
           "value": "athapar4-fragments"
+        },
+        {
+          "name": "AWS_DYNAMODB_TABLE_NAME",
+          "value": "fragments"
         }
       ],
       "environmentFiles": [],
