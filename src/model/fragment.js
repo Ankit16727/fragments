@@ -92,9 +92,19 @@ class Fragment {
   static isSupportedType(value) {
     try {
       const { type } = contentType.parse(value);
-      return ['text/plain', 'text/html', 'text/markdown', 'text/csv', 'application/json'].includes(
-        type
-      );
+      return [
+        'text/plain',
+        'text/markdown',
+        'text/html',
+        'text/csv',
+        'application/json',
+        'application/yaml',
+        'image/png',
+        'image/jpeg',
+        'image/webp',
+        'image/gif',
+        'image/avif',
+      ].includes(type);
     } catch {
       return false;
     }
