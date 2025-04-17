@@ -1,6 +1,8 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const logger = require('../../src/logger');
+const fs = require('fs');
+const path = require('path');
 
 describe('GET /v1/fragments/:id.ext - with conversion', () => {
   test('Check validConversion() pass', async () => {
@@ -239,5 +241,100 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
       .auth('user1@email.com', 'password1');
 
     expect(res.status).toBe(404);
+  });
+
+  test('Upload YAML and convert to text', async () => {
+    const yamlContent = `
+  name: John
+  age: 30
+  `;
+
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/yaml')
+      .send(yamlContent);
+
+    const id = resPost.body.fragment.id;
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.txt`)
+      .auth('user1@email.com', 'password1');
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('name: John');
+  });
+
+  test('YAML to YAML (round-trip)', async () => {
+    const yamlContent = `
+  name: Ankit
+  age: 21
+    `.trim();
+
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/yaml')
+      .send(yamlContent);
+
+    const id = resPost.body.fragment.id;
+    logger.debug('YAML fragment created for round-trip:', id);
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.yaml`)
+      .auth('user1@email.com', 'password1');
+
+    logger.info('Returned YAML as YAML');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/application\/yaml/);
+    expect(res.text.trim()).toContain('name: Ankit');
+    expect(res.text.trim()).toContain('age: 21');
+  });
+
+  test('JSON to YAML conversion', async () => {
+    const jsonData = { name: 'Ankit', age: 21 };
+
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'application/json')
+      .send(JSON.stringify(jsonData));
+
+    const id = resPost.body.fragment.id;
+    logger.debug('JSON fragment created for YAML conversion:', id);
+
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.yaml`)
+      .auth('user1@email.com', 'password1');
+
+    logger.info('Converted JSON to YAML');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/application\/yaml/);
+    expect(res.text).toContain('name: Ankit');
+    expect(res.text).toContain('age: 21');
+  });
+
+  test('Upload PNG and convert to JPEG', async () => {
+    // Load a sample PNG file
+    const imageBuffer = fs.readFileSync(path.join(__dirname, '../assets/sample.png'));
+
+    // Upload the image
+    const resPost = await request(app)
+      .post('/v1/fragments')
+      .auth('user1@email.com', 'password1')
+      .set('Content-Type', 'image/png')
+      .send(imageBuffer);
+
+    expect(resPost.status).toBe(201);
+    const id = resPost.body.fragment.id;
+
+    // Convert to JPEG
+    const res = await request(app)
+      .get(`/v1/fragments/${id}.jpeg`)
+      .auth('user1@email.com', 'password1');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/image\/jpeg/);
+    expect(res.body.length).toBeGreaterThan(0);
   });
 });

@@ -18,7 +18,7 @@ const validConversions = {
   'text/csv': ['.csv', '.txt', '.json'],
   'application/json': ['.json', '.yaml', '.yml', '.txt'],
   'application/yaml': ['.yaml', '.txt'],
-  'image/png': ['.png', '.jpg', '.webp', '.gif', '.avif'],
+  'image/png': ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif'],
   'image/jpeg': ['.png', '.jpg', '.webp', '.gif', '.avif'],
   'image/webp': ['.png', '.jpg', '.webp', '.gif', '.avif'],
   'image/avif': ['.png', '.jpg', '.webp', '.gif', '.avif'],
@@ -58,8 +58,12 @@ const convertFragmentData = async (mimeType, ext, data) => {
           convertedData = striptags(stringData);
         } else if (mimeType === 'text/markdown') {
           convertedData = removeMarkdown(stringData);
-        } else if (mimeType === 'application/json' || mimeType === 'application/yaml') {
+        } else if (mimeType === 'application/json') {
           convertedData = JSON.stringify(JSON.parse(stringData), null, 2);
+        } else if (mimeType === 'application/yaml') {
+          convertedData = stringData;
+        } else {
+          convertedData = stringData;
         }
         break;
       case '.json':
@@ -77,6 +81,9 @@ const convertFragmentData = async (mimeType, ext, data) => {
         if (mimeType === 'application/json') {
           const obj = JSON.parse(stringData);
           convertedData = yaml.dump(obj);
+          contentType = 'application/yaml';
+        } else if (mimeType === 'application/yaml') {
+          convertedData = stringData;
           contentType = 'application/yaml';
         }
         break;
