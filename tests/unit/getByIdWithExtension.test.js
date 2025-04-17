@@ -232,4 +232,12 @@ describe('GET /v1/fragments/:id.ext - with conversion', () => {
     expect(res.text.trim()).toBe(csv);
     expect(res.headers['content-type']).toMatch(/text\/csv/);
   });
+
+  test('Returns 404 for nonexistent fragment ID', async () => {
+    const res = await request(app)
+      .get('/v1/fragments/nonexistentid123.html')
+      .auth('user1@email.com', 'password1');
+
+    expect(res.status).toBe(404);
+  });
 });

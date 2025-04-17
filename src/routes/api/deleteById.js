@@ -1,28 +1,33 @@
-// src/routes/api/delete.js
 const { Fragment } = require('../../model/fragment');
-const createSuccessResponse = require('../../response').createSuccessResponse;
-const createErrorResponse = require('../../response').createErrorResponse;
+const { createSuccessResponse, createErrorResponse } = require('../../response');
+const logger = require('../../logger');
 
 module.exports = async (req, res) => {
   const id = req.params.id;
-  let user = req.user;
-  const idList = await Fragment.byUser(user);
+  const user = req.user;
 
-  if (idList.includes(id)) {
-    await Fragment.delete(user, id);
-    createSuccessResponse(
-      res.status(200).json({
-        status: 'ok',
-        message: `fragment ${id} was deleted`,
-      })
-    );
-  } else {
-    const error = 'Id is not exist by user ' + user + '.';
-    createErrorResponse(
-      res.status(415).json({
-        code: 415,
-        message: error,
-      })
-    );
+  try {
+    const idList = await Fragment.byUser(user);
+
+    if (idList.includes(id)) {
+      await Fragment.delete(user, id);
+      logger.info(`Fragment ${id} deleted for user ${user}`);
+
+      return res.status(200).json(
+        createSuccessResponse({
+          message: `fragment ${id} was deleted`,
+        })
+      );
+    } else {
+      logger.warn(`Fragment ${id} not found for user ${user}`);
+
+      return res.status(404).json(createErrorResponse(404, 'Fragment not found'));
+    }
+  } catch (err) {
+    logger.error(`Error deleting fragment ${id}: ${err.message}`);
+
+    return res
+      .status(500)
+      .json(createErrorResponse(500, `Failed to delete fragment ${id}: ${err.message}`));
   }
 };
