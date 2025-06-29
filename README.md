@@ -1,35 +1,7 @@
-# fragments
-A node.js based REST API using express. It includes various scripts to run the server in different modes.
+# Fragments Microservice
 
-# Available Scripts
-Below are the scripts available in this project, along with their usage instructions.
+## Project Overview
 
-## lint
+Fragments Microservices is a cloud-native microservice-based application designed to store, retrieve, and manage user-generated content (fragments) such as text, JSON, and binary data (e.g., images). The application is built using Node.js , Express.js, and deployed on AWS services for scalability and security.
 
-Run the 'lint' to check for code style and potential errors. It checks for any linting errors using ESLint.
-
-```bash
-npm run lint
-```
-## start
-Runs the server normally, without any additional development tools or debugging capabilities.
-
-```bash
-npm start
-```
-
-## dev
-
-This script starts the server in development mode, using nodemon. Nodemon watches for file changes in the src/ folder and automatically restarts the server when changes are detected.
-
-```bash
-npm run dev
-```
-
-## debug
-
-This script starts the server in debug mode, using nodemon and enabling the Node.js inspector. We have attached VSCode debugger to the server for in-depth debugging.
-
-```bash
-npm run debug
-```
+The system allows users to perform basic CRUD operations on their fragments, with authentication and authorization handled via Amazon Cognito. Data is stored in AWS DynamoDB for metadata and Amazon S3 for binary content.
